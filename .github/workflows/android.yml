@@ -1,0 +1,96 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;27.0.12077973"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.4.1"
+
+      # The repo is kept text-only; regenerate the Gradle wrapper jar if it is missing.
+      - name: Ensure Gradle wrapper
+        run: |
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            gradle wrapper --gradle-version 9.4.1 --distribution-type bin
+            echo "WRAPPER_GENERATED=1" >> "$GITHUB_ENV"
+          fi
+          chmod +x gradlew
+
+      # A throwaway debug keystore, created once and then committed (as base64 text) so every
+      # later build shares one signature and `adb install -r` upgrades work.
+      - name: Ensure debug keystore
+        run: |
+          if [ ! -f keystore/roomrunner-debug.jks.b64 ]; then
+            mkdir -p keystore
+            keytool -genkeypair -v -keystore keystore/roomrunner-debug.jks -storetype PKCS12 \
+              -alias roomrunner -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass android -keypass android -dname "CN=Room Runner Debug, O=thehumanworks, C=GB"
+            base64 -w 76 keystore/roomrunner-debug.jks > keystore/roomrunner-debug.jks.b64
+            echo "KEYSTORE_GENERATED=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Unit tests (level generator, physics, match rules, LAN sync)
+        run: ./gradlew --no-daemon testDebugUnitTest --console=plain
+
+      - name: Build APK
+        run: |
+          ./gradlew --no-daemon assembleDebug --console=plain
+          cp app/build/outputs/apk/debug/app-debug.apk room-runner.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: room-runner-apk
+          path: room-runner.apk
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: app/build/reports/tests/
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Room Runner v1.0.${{ github.run_number }}
+          make_latest: "true"
+          files: room-runner.apk
+          body: |
+            Sideloadable Meta Quest 3 build of Room Runner (debug-signed, arm64-v8a).
+            Install: `adb install -r room-runner.apk`. See README for full steps.
+
+      - name: Commit generated wrapper / keystore
+        if: env.WRAPPER_GENERATED == '1' || env.KEYSTORE_GENERATED == '1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f gradle/wrapper/gradle-wrapper.jar gradlew gradlew.bat gradle/wrapper/gradle-wrapper.properties
+          [ -f keystore/roomrunner-debug.jks.b64 ] && git add keystore/roomrunner-debug.jks.b64
+          git commit -m "Add generated Gradle wrapper and debug keystore [skip ci]" || exit 0
+          git push
