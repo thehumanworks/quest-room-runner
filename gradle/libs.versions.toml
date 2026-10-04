@@ -1,0 +1,19 @@
+[versions]
+spatialsdk = "0.14.0"
+agp = "8.11.1"
+kotlin = "2.1.0"
+coreKtx = "1.13.1"
+junit = "4.13.2"
+
+[libraries]
+meta-spatial-sdk-base = { group = "com.meta.spatial", name = "meta-spatial-sdk", version.ref = "spatialsdk" }
+meta-spatial-sdk-vr = { group = "com.meta.spatial", name = "meta-spatial-sdk-vr", version.ref = "spatialsdk" }
+meta-spatial-sdk-toolkit = { group = "com.meta.spatial", name = "meta-spatial-sdk-toolkit", version.ref = "spatialsdk" }
+meta-spatial-sdk-mruk = { group = "com.meta.spatial", name = "meta-spatial-sdk-mruk", version.ref = "spatialsdk" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+meta-spatial-plugin = { id = "com.meta.spatial.plugin", version.ref = "spatialsdk" }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent" android:layout_height="match_parent"
+  android:orientation="vertical" android:gravity="center_horizontal"
+  android:background="@drawable/panel_bg" android:padding="28dp">
+
+  <TextView android:id="@+id/title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:text="ROOM RUNNER" android:textColor="#FFD54F" android:textSize="40sp" android:textStyle="bold"/>
+
+  <TextView android:id="@+id/body" android:layout_width="match_parent" android:layout_height="0dp"
+    android:layout_weight="1" android:layout_marginTop="12dp" android:gravity="center"
+    android:textColor="#FFFFFF" android:textSize="19sp" android:lineSpacingExtra="4dp"
+    android:text="Loading your room..."/>
+
+  <LinearLayout android:id="@+id/row1" android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="horizontal" android:gravity="center" android:layout_marginTop="10dp">
+    <Button android:id="@+id/btn1" android:layout_width="0dp" android:layout_weight="1" android:layout_height="64dp"
+      android:layout_margin="6dp" android:background="@drawable/btn_bg" android:textColor="#FFFFFF"
+      android:textSize="18sp" android:textAllCaps="false" android:text="Solo (A)"/>
+    <Button android:id="@+id/btn2" android:layout_width="0dp" android:layout_weight="1" android:layout_height="64dp"
+      android:layout_margin="6dp" android:background="@drawable/btn_bg" android:textColor="#FFFFFF"
+      android:textSize="18sp" android:textAllCaps="false" android:text="Host 2P (X)"/>
+    <Button android:id="@+id/btn3" android:layout_width="0dp" android:layout_weight="1" android:layout_height="64dp"
+      android:layout_margin="6dp" android:background="@drawable/btn_bg" android:textColor="#FFFFFF"
+      android:textSize="18sp" android:textAllCaps="false" android:text="Join 2P (Y)"/>
+  </LinearLayout>
+
+  <TextView android:id="@+id/footer" android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginTop="8dp" android:gravity="center" android:textColor="#B0BEC5" android:textSize="14sp"
+    android:text=""/>
+</LinearLayout>
